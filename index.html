@@ -213,9 +213,8 @@
             gridItem.appendChild(deleteButton);
 
             cartItemsDiv.appendChild(gridItem);
-
-            setCookie('listtag', document.getElementById("cartItems").outerHTML, 30);
         }
+        setCookie('listtag', document.getElementById("cartItems").outerHTML, 30);
     }
     function getCookie(cname) {
         var name = cname + "=";
