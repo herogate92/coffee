@@ -209,7 +209,7 @@
 
             cartItemsDiv.appendChild(gridItem);
 
-            setCookie('listtag', document.getElementById("cartItems"), 30);
+            setCookie('listtag', document.getElementById("cartItems").outerHTML, 30);
         }
     }
     function getCookie(cname) {
