@@ -107,7 +107,12 @@
 
 </html>
 <script>
-    getCookie('listtag');
+    if(getCookie('listtag') != ''){
+        document.getElementById('cartItems').remove();
+        var temphtml = getCookie('listtag');
+        document.getElementsByClassName('cart')[0].appendChild(temphtml);
+    }
+    
 
     let cartItems = [];
     function addCoffee() {
