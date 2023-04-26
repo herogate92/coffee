@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>커피주문</title>
+</head>
+<style>
+    .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 50px;
+    }
+
+    .menu div {
+        margin-bottom: 10px;
+    }
+
+    .grid-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        grid-gap: 10px;
+    }
+
+    .grid-item {
+        border: 0px solid black;
+        padding: 10px;
+        text-align: center;
+    }
+
+    .grid-item span {
+        margin-right: 10px;
+        display: block;
+        float: left;
+    }
+
+    .grid-item button {
+        margin-top: 1px;
+    }
+
+    #menu-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .menu-item {
+        border: 0px solid black;
+        padding: 10px;
+        text-align: center;
+    }
+
+    .innerInputNumber {
+        width: 25px;
+    }
+
+
+    /* #cart-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-gap: 20px;
+      margin-bottom: 20px;
+    } */
+
+    /* .cart-item {
+      border: 1px solid black;
+      padding: 10px;
+      text-align: center;
+    } */
+</style>
+
+<body>
+    <div class="container">
+        <div class="menu">
+            <h2>커피주문</h2>
+            <div>
+                <label for="coffeeName">이름:</label>
+                <input type="text" id="coffeeName">
+                <button onclick="addCoffee()">Add</button>
+            </div>
+            <div>
+                <input type="radio" id="hot" name="temp" value="hot" checked>
+                <label for="hot">Hot</label>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <input type="radio" id="cold" name="temp" value="cold">
+                <label for="cold">Cold</label>
+            </div>
+            <div>
+                <label for="quantity">수량:</label>
+                <input type="number" id="quantity" value="1">
+                <button onclick="increaseQuantity()">+</button>
+                <button onclick="reducesQuantity()">-</button>
+            </div>
+        </div>
+        <div class="cart">
+            <h2>목록</h2>
+            <div class="grid-container" id="cartItems">
+            </div>
+        </div>
+    </div>
+
+
+</body>
+
+</html>
+<script>
+    if(getCookie('listtag') != ''){
+        document.getElementById('cartItems').remove();
+        var temphtml = getCookie('listtag');
+        document.getElementsByClassName('cart')[0].appendChild(temphtml);
+    }
+    
+
+    let cartItems = [];
+    function addCoffee() {
+        let coffeeName = document.getElementById("coffeeName").value;
+        let temp = document.querySelector('input[name="temp"]:checked').value;
+        let quantity = parseInt(document.getElementById("quantity").value);
+
+        let coffee = { name: coffeeName, temp: temp, quantity: quantity };
+
+        for (let i = 0; i < cartItems.length; i++) {
+            if (cartItems[i].name == coffeeName) {
+                var tempNum = parseInt(document.getElementsByClassName("quantity_" + coffeeName)[0].value) + Number(quantity);
+                document.getElementsByClassName("quantity_" + coffeeName)[0].value = tempNum;
+                cartItems[i] = { name: coffeeName, temp: temp, quantity: tempNum };
+                return;
+            }
+        }
+        cartItems.push(coffee);
+        renderCart();
+    }
+
+    function increaseQuantity() {
+        let quantityInput = document.getElementById("quantity");
+        console.log(typeof (quantityInput));
+        let currentQuantity = parseInt(quantityInput.value);
+        quantityInput.value = currentQuantity + 1;
+        if (quantityInput.value <= 1) {
+            quantityInput.value = 1;
+            return;
+        }
+    }
+    function reducesQuantity() {
+        let quantityInput = document.getElementById("quantity");
+        let currentQuantity = parseInt(quantityInput.value);
+        if (quantityInput.value <= 1) {
+            quantityInput.value = 1;
+            return;
+        }
+        quantityInput.value = currentQuantity - 1;
+    }
+
+    function increaseQuantityClass(name) {
+        let quantityInput = document.getElementsByClassName(name)[0];
+        let currentQuantity = parseInt(quantityInput.value);
+        quantityInput.value = currentQuantity + 1;
+        if (quantityInput.value <= 1) {
+            quantityInput.value = 1;
+            return;
+        }
+    }
+    function reducesQuantityClass(name) {
+        let quantityInput = document.getElementsByClassName(name)[0];
+        let currentQuantity = parseInt(quantityInput.value);
+        if (quantityInput.value <= 1) {
+            quantityInput.value = 1;
+            return;
+        }
+        quantityInput.value = currentQuantity - 1;
+    }
+
+    function deleteCoffee(index) {
+        cartItems.splice(index, 1);
+        renderCart();
+    }
+
+    function renderCart() {
+        let cartItemsDiv = document.getElementById("cartItems");
+        cartItemsDiv.innerHTML = "";
+
+        for (let i = 0; i < cartItems.length; i++) {
+            let coffee = cartItems[i];
+            let gridItem = document.createElement("div");
+            gridItem.classList.add("grid-item");
+
+            let coffeeName = document.createElement("span");
+            coffeeName.innerHTML = coffee.name;
+            coffeeName.innerHTML += "<input type='hidden' id='quantity_" + coffeeName.innerText + "' value='" + coffee.quantity + "'/>";
+            gridItem.appendChild(coffeeName);
+
+
+            let temp = document.createElement("span");
+            temp.innerHTML = coffee.temp;
+            gridItem.appendChild(temp);
+
+            let quantity = document.createElement("span");
+            //quantity.innerHTML = "수량: " + coffee.quantity;
+            quantity.innerHTML = "<div>";
+            quantity.innerHTML += "<input type='number' class='innerInputNumber quantity_" + coffeeName.innerText + "' value='" + coffee.quantity + "'/>";
+            quantity.innerHTML += "<button onclick='increaseQuantityClass(\"quantity_" + coffeeName.innerText + "\")'>+</button>";
+            quantity.innerHTML += "<button onclick='reducesQuantityClass(\"quantity_" + coffeeName.innerText + "\")'>-</button></div>";
+            gridItem.appendChild(quantity);
+
+            let deleteButton = document.createElement("button");
+            deleteButton.innerHTML = "삭제";
+            deleteButton.addEventListener("click", () => {
+                deleteCoffee(i);
+            });
+            gridItem.appendChild(deleteButton);
+
+            cartItemsDiv.appendChild(gridItem);
+        }
+        setCookie('listtag', document.getElementById("cartItems").outerHTML, 30);
+    }
+    function getCookie(cname) {
+        var name = cname + "=";
+        var decodedCookie = decodeURIComponent(document.cookie);
+        var ca = decodedCookie.split(';');
+        for (var i = 0; i < ca.length; i++) {
+            var c = ca[i];
+            while (c.charAt(0) == ' ') {
+                c = c.substring(1);
+            }
+            if (c.indexOf(name) == 0) {
+                return c.substring(name.length, c.length);
+            }
+        }
+        return "";
+    }
+
+    function setCookie(cname, cvalue, exdays) {
+        var d = new Date();
+        d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));//day*24hh*60mm*60ss*1000mis
+        var expires = "expires=" + d.toGMTString();
+        document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+    }
+</script>
