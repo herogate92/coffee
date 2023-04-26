@@ -93,6 +93,7 @@
             <div class="input-group mb-3">
                 <span class="input-group-text" id="basic-addon1" for="coffeeName">이름</span>
                 <input class="form-control" style="width: 50%;"type="text" id="coffeeName">
+                <button id="nameClear" class="btn btn-warning" style="width: 40px;"><i class="fa-solid fa-delete-left"></i></button>
             </div>
             <div class="input-group mb-3">
                 <div class="form-check" style="margin:0 auto;">
@@ -143,7 +144,13 @@
 
     let cartItems = [];
     function addCoffee() {
+
         let coffeeName = document.getElementById("coffeeName").value;
+        if(coffeeName.trim() == "")
+        {
+            alert("메뉴이름 적어요");
+            return;
+        }
         let temp = document.querySelector('input[name="temp"]:checked').value;
         let quantity = parseInt(document.getElementById("quantity").value);
 
@@ -321,4 +328,10 @@
 
         document.cookie = cname + "=" + tempCookieStr+";" + expires + ";path=/";
     }
+
+    
+    document.getElementById("nameClear").addEventListener("click", () => {
+                document.getElementById("coffeeName").value ="";
+                document.getElementById("coffeeName").focus();
+            });
 </script>
