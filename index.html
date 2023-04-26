@@ -5,6 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>커피주문</title>
+    <link href="asset/fontawesome/css/fontawesome.css" rel="stylesheet">
+    <link href="asset/fontawesome/css/brands.css" rel="stylesheet">
+    <link href="asset/fontawesome/css/solid.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
 </head>
 <style>
     .container {
@@ -12,6 +17,7 @@
         flex-direction: column;
         align-items: center;
         margin-top: 50px;
+        font-size: 1.5em;
     }
 
     .menu div {
@@ -21,12 +27,12 @@
     .grid-container {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        grid-gap: 10px;
+        grid-gap: 4px;
     }
 
     .grid-item {
         border: 0px solid black;
-        padding: 10px;
+        padding: 4px;
         text-align: center;
     }
 
@@ -53,10 +59,18 @@
         text-align: center;
     }
 
-    .innerInputNumber {
-        width: 25px;
+    
+    button{
+        height:40px;
     }
-
+    div{
+        text-align: center;
+    }
+    input{
+    }
+    .mb-3 {
+    margin-bottom: 0.5rem!important;
+}
 
     /* #cart-container {
       display: grid;
@@ -75,28 +89,34 @@
 <body>
     <div class="container">
         <div class="menu">
-            <h2>커피주문</h2>
-            <div>
-                <label for="coffeeName">이름:</label>
-                <input type="text" id="coffeeName">
-                <button onclick="addCoffee()">Add</button>
+            <h2 style="text-align: center;"><i class="fa-solid fa-mug-saucer"></i> 커피주문 <i class="fa-solid fa-mug-saucer"></i></h2>
+            <div class="input-group mb-3">
+                <span class="input-group-text" id="basic-addon1" for="coffeeName">이름</span>
+                <input class="form-control" style="width: 50%;"type="text" id="coffeeName">
             </div>
-            <div>
-                <input type="radio" id="hot" name="temp" value="hot" checked>
-                <label for="hot">Hot</label>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <input type="radio" id="cold" name="temp" value="cold">
-                <label for="cold">Cold</label>
+            <div class="input-group mb-3">
+                <div class="form-check" style="margin:0 auto;">
+                    <input class="form-check-input" style="width: 25px; height: 25px;" type="radio" id="hot" name="temp" value="h" checked>
+                    <label class="form-check-label" for="hot">Hot<i class="fa-solid fa-mug-hot fa-xl"></i></label>
+                </div>
+                <div class="form-check" style="margin:0 auto;">
+                    <input class="form-check-input" style="width: 25px; height: 25px;" type="radio" id="cold" name="temp" value="c">
+                    <label class="form-check-label" for="cold">Cold<i class="fa-regular fa-snowflake fa-xl"></i></label>
+                </div>
             </div>
-            <div>
-                <label for="quantity">수량:</label>
-                <input type="number" id="quantity" value="1">
-                <button onclick="increaseQuantity()">+</button>
-                <button onclick="reducesQuantity()">-</button>
+            <div class="input-group mb-3">
+                <span class="input-group-text" id="basic-addon2" for="quantity">수량</span>
+                <input class="form-control" style="width: 50%;" type="number" id="quantity" value="1">
+                <button class="btn btn-dark" style="width: 40px;" onclick="increaseQuantity()">+</button>
+                <button class="btn btn-dark" style="width:40px;" onclick="reducesQuantity()">-</button>
+            </div>
+            <div style="width:100%">
+                <button style="width:100%" class="btn btn-warning" onclick="addCoffee()">추가</button>
             </div>
         </div>
         <div class="cart">
-            <h2>목록</h2>
+            <div style="text-align: center;"><i class="fa-regular fa-rectangle-list"></i> 목록
+                <button class="btn btn-dark" onclick="setCookie('coffee-cookie', 30)"><i class="fa-regular fa-floppy-disk"></i> 저장</button></div>
             <div class="grid-container" id="cartItems">
             </div>
         </div>
@@ -107,12 +127,19 @@
 
 </html>
 <script>
-    if(getCookie('listtag') != ''){
-        document.getElementById('cartItems').remove();
-        var temphtml = getCookie('listtag');
-        document.getElementsByClassName('cart')[0].appendChild(temphtml);
+    window.onload = function() {
+        var tempco = getCookie('coffee-cookie');
+        if(tempco.trim() !="")
+        {
+            for (let i = 0; i < tempco.split("|").length-1; i++) {
+                let obj = tempco.split("|")[i];
+                let item = obj.split(",");
+                let coffee = { name: item[0], temp: item[1], quantity: item[2] };
+                cartItems.push(coffee);
+                renderCart();       
+            }
+        }
     }
-    
 
     let cartItems = [];
     function addCoffee() {
@@ -123,20 +150,40 @@
         let coffee = { name: coffeeName, temp: temp, quantity: quantity };
 
         for (let i = 0; i < cartItems.length; i++) {
-            if (cartItems[i].name == coffeeName) {
-                var tempNum = parseInt(document.getElementsByClassName("quantity_" + coffeeName)[0].value) + Number(quantity);
-                document.getElementsByClassName("quantity_" + coffeeName)[0].value = tempNum;
-                cartItems[i] = { name: coffeeName, temp: temp, quantity: tempNum };
-                return;
+            if (cartItems[i].name == coffeeName) 
+            {
+                if(cartItems[i].temp == temp) 
+                {
+                    var tempNum = parseInt(document.getElementsByClassName("quantity_" + coffeeName + "_" + temp)[0].value) + Number(quantity);
+                    document.getElementsByClassName("quantity_" + coffeeName + "_" + temp)[0].value = tempNum;
+                    cartItems[i] = { name: coffeeName, temp: temp, quantity: tempNum };
+                    return;
+                }
             }
         }
         cartItems.push(coffee);
+        setCookie('coffee-cookie', 30);
         renderCart();
+    }
+    function checkQuantity()
+    {
+        for (let i = 0; i < cartItems.length; i++) {
+            if (cartItems[i].name == coffeeName) 
+            {
+                if(cartItems[i].temp == temp) 
+                {
+                    var tempNum = parseInt(document.getElementsByClassName("quantity_" + coffeeName + "_" + temp)[0].value) + Number(quantity);
+                    document.getElementsByClassName("quantity_" + coffeeName + "_" + temp)[0].value = tempNum;
+                    cartItems[i] = { name: coffeeName, temp: temp, quantity: tempNum };
+                    return;
+                }
+            }
+        }
+
     }
 
     function increaseQuantity() {
         let quantityInput = document.getElementById("quantity");
-        console.log(typeof (quantityInput));
         let currentQuantity = parseInt(quantityInput.value);
         quantityInput.value = currentQuantity + 1;
         if (quantityInput.value <= 1) {
@@ -158,11 +205,27 @@
         let quantityInput = document.getElementsByClassName(name)[0];
         let currentQuantity = parseInt(quantityInput.value);
         quantityInput.value = currentQuantity + 1;
+        var namet = name.split("_")[1];
+        var tempt = name.split("_")[2];
+        console.log(tempt);
+        for (let i = 0; i < cartItems.length; i++) {
+            if (cartItems[i].name == namet) 
+            {
+                if(cartItems[i].temp == tempt) 
+                {
+                    console.log(quantityInput.value);
+                    cartItems[i] = { name: namet, temp: tempt, quantity: quantityInput.value};
+                    return;
+                }
+            }
+        }
+
         if (quantityInput.value <= 1) {
             quantityInput.value = 1;
             return;
         }
     }
+
     function reducesQuantityClass(name) {
         let quantityInput = document.getElementsByClassName(name)[0];
         let currentQuantity = parseInt(quantityInput.value);
@@ -187,34 +250,51 @@
             let gridItem = document.createElement("div");
             gridItem.classList.add("grid-item");
 
+            let inputGroup = document.createElement("div");
+            inputGroup.className = 'input-group mb-3';
+
             let coffeeName = document.createElement("span");
+            coffeeName.className = 'input-group-text';
             coffeeName.innerHTML = coffee.name;
-            coffeeName.innerHTML += "<input type='hidden' id='quantity_" + coffeeName.innerText + "' value='" + coffee.quantity + "'/>";
-            gridItem.appendChild(coffeeName);
-
-
-            let temp = document.createElement("span");
-            temp.innerHTML = coffee.temp;
-            gridItem.appendChild(temp);
-
-            let quantity = document.createElement("span");
+            coffeeName.innerHTML += "<input type='hidden' id='quantity_" + coffee.name + "_" + coffee.temp + "' value='" + coffee.quantity + "'/>";
+            if(coffee.temp == 'h')
+            {
+                coffeeName.innerHTML += "<i class=\"fa-solid fa-mug-hot fa-xl\"></i>";
+            }
+            else
+            {
+                coffeeName.innerHTML += "<i class=\"fa-regular fa-snowflake fa-xl\"></i>";
+            }
+            inputGroup.appendChild(coffeeName);
+            
+            
+            // <div class="input-group mb-3">
+            //     <span class="input-group-text" id="basic-addon2" for="quantity">수량</span>
+            //     <input class="form-control" style="width: 50%;" type="number" id="quantity" value="1">
+            //     <button class="btn btn-primary" style="width: 40px;" onclick="increaseQuantity()">+</button>
+            //     <button class="btn btn-primary" style="width:40px;" onclick="reducesQuantity()">-</button>
+            // </div>
+            //let quantity = document.createElement("span");
             //quantity.innerHTML = "수량: " + coffee.quantity;
-            quantity.innerHTML = "<div>";
-            quantity.innerHTML += "<input type='number' class='innerInputNumber quantity_" + coffeeName.innerText + "' value='" + coffee.quantity + "'/>";
-            quantity.innerHTML += "<button onclick='increaseQuantityClass(\"quantity_" + coffeeName.innerText + "\")'>+</button>";
-            quantity.innerHTML += "<button onclick='reducesQuantityClass(\"quantity_" + coffeeName.innerText + "\")'>-</button></div>";
-            gridItem.appendChild(quantity);
+            //inputGroup.innerHTML = "<div class=\"input-group mb-3\">";
+            inputGroup.innerHTML += "<input style=\"width:5%;\" type=\"number\" class=\"form-control innerInputNumber quantity_" + coffee.name + "_" + coffee.temp + "\" value=\"" + coffee.quantity + "\"/>";
+            inputGroup.innerHTML += "<button class=\"btn btn-dark\" style=\"width: 40px;\" onclick=\"increaseQuantityClass('quantity_" + coffee.name + "_" + coffee.temp + "')\">+</button>";
+            inputGroup.innerHTML += "<button class=\"btn btn-dark\" style=\"width: 40px;\" onclick=\"reducesQuantityClass('quantity_" + coffee.name + "_" + coffee.temp +"')\">-</button></div>";
+            
+            gridItem.appendChild(inputGroup);
+            //gridItem.appendChild(quantity);
 
             let deleteButton = document.createElement("button");
-            deleteButton.innerHTML = "삭제";
+            deleteButton.className="btn btn-warning";
+            deleteButton.style="width: 40px;";
+            deleteButton.innerHTML = "<i class=\"fa-solid fa-delete-left\"></i>";
             deleteButton.addEventListener("click", () => {
                 deleteCoffee(i);
             });
-            gridItem.appendChild(deleteButton);
+            inputGroup.appendChild(deleteButton);
 
             cartItemsDiv.appendChild(gridItem);
         }
-        setCookie('listtag', document.getElementById("cartItems").outerHTML, 30);
     }
     function getCookie(cname) {
         var name = cname + "=";
@@ -232,10 +312,13 @@
         return "";
     }
 
-    function setCookie(cname, cvalue, exdays) {
+    function setCookie(cname, exdays) {
         var d = new Date();
         d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));//day*24hh*60mm*60ss*1000mis
         var expires = "expires=" + d.toGMTString();
-        document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+        let tempCookieStr ="";
+        cartItems.forEach(cf => tempCookieStr += cf.name+","+cf.temp+","+cf.quantity+"|");
+
+        document.cookie = cname + "=" + tempCookieStr+";" + expires + ";path=/";
     }
 </script>
