@@ -144,34 +144,33 @@
 
     let cartItems = [];
     function addCoffee() {
-
-        let coffeeName = document.getElementById("coffeeName").value;
-        if(coffeeName.trim() == "")
-        {
-            alert("메뉴이름 적어요");
-            return;
-        }
-        let temp = document.querySelector('input[name="temp"]:checked').value;
-        let quantity = parseInt(document.getElementById("quantity").value);
-
-        let coffee = { name: coffeeName, temp: temp, quantity: quantity };
-
-        for (let i = 0; i < cartItems.length; i++) {
-            if (cartItems[i].name == coffeeName) 
-            {
-                if(cartItems[i].temp == temp) 
-                {
-                    var tempNum = parseInt(document.getElementsByClassName("quantity_" + coffeeName + "_" + temp)[0].value) + Number(quantity);
-                    document.getElementsByClassName("quantity_" + coffeeName + "_" + temp)[0].value = tempNum;
-                    cartItems[i] = { name: coffeeName, temp: temp, quantity: tempNum };
-                    return;
-                }
-            }
-        }
-        cartItems.push(coffee);
-        setCookie('coffee-cookie', 30);
-        renderCart();
+    let coffeeName = document.getElementById("coffeeName").value.trim();
+    if (coffeeName === "") {
+        alert("메뉴 이름을 입력하세요");
+        return;
     }
+
+    let temp = document.querySelector('input[name="temp"]:checked').value;
+    let quantity = parseInt(document.getElementById("quantity").value);
+
+    // 기존 메뉴 중 같은 이름과 온도를 가진 항목이 있는지 확인
+    let existingItem = cartItems.find(
+        item => item.name === coffeeName && item.temp === temp
+    );
+
+    if (existingItem) {
+        // 동일한 항목이 있으면 수량을 업데이트
+        existingItem.quantity += quantity;
+    } else {
+        // 새 항목 추가
+        let coffee = { name: coffeeName, temp: temp, quantity: quantity };
+        cartItems.push(coffee);
+    }
+
+    // 쿠키에 저장하고 장바구니 UI를 다시 렌더링
+    setCookie('coffee-cookie', 30);
+    renderCart();
+}
     function checkQuantity()
     {
         for (let i = 0; i < cartItems.length; i++) {
@@ -249,60 +248,61 @@
     }
 
     function renderCart() {
-        let cartItemsDiv = document.getElementById("cartItems");
-        cartItemsDiv.innerHTML = "";
+    let cartItemsDiv = document.getElementById("cartItems");
+    cartItemsDiv.innerHTML = "";
 
-        for (let i = 0; i < cartItems.length; i++) {
-            let coffee = cartItems[i];
-            let gridItem = document.createElement("div");
-            gridItem.classList.add("grid-item");
+    cartItems.forEach((coffee, index) => {
+        let gridItem = document.createElement("div");
+        gridItem.classList.add("grid-item");
 
-            let inputGroup = document.createElement("div");
-            inputGroup.className = 'input-group mb-3';
+        let inputGroup = document.createElement("div");
+        inputGroup.className = 'input-group mb-3';
 
-            let coffeeName = document.createElement("span");
-            coffeeName.className = 'input-group-text';
-            coffeeName.innerHTML = coffee.name;
-            coffeeName.innerHTML += "<input type='hidden' id='quantity_" + coffee.name + "_" + coffee.temp + "' value='" + coffee.quantity + "'/>";
-            if(coffee.temp == 'h')
-            {
-                coffeeName.innerHTML += "<i class=\"fa-solid fa-mug-hot fa-xl\"></i>";
-            }
-            else
-            {
-                coffeeName.innerHTML += "<i class=\"fa-regular fa-snowflake fa-xl\"></i>";
-            }
-            inputGroup.appendChild(coffeeName);
-            
-            
-            // <div class="input-group mb-3">
-            //     <span class="input-group-text" id="basic-addon2" for="quantity">수량</span>
-            //     <input class="form-control" style="width: 50%;" type="number" id="quantity" value="1">
-            //     <button class="btn btn-primary" style="width: 40px;" onclick="increaseQuantity()">+</button>
-            //     <button class="btn btn-primary" style="width:40px;" onclick="reducesQuantity()">-</button>
-            // </div>
-            //let quantity = document.createElement("span");
-            //quantity.innerHTML = "수량: " + coffee.quantity;
-            //inputGroup.innerHTML = "<div class=\"input-group mb-3\">";
-            inputGroup.innerHTML += "<input style=\"width:5%;\" type=\"number\" class=\"form-control innerInputNumber quantity_" + coffee.name + "_" + coffee.temp + "\" value=\"" + coffee.quantity + "\"/>";
-            inputGroup.innerHTML += "<button class=\"btn btn-dark\" style=\"width: 40px;\" onclick=\"increaseQuantityClass('quantity_" + coffee.name + "_" + coffee.temp + "')\">+</button>";
-            inputGroup.innerHTML += "<button class=\"btn btn-dark\" style=\"width: 40px;\" onclick=\"reducesQuantityClass('quantity_" + coffee.name + "_" + coffee.temp +"')\">-</button></div>";
-            
-            gridItem.appendChild(inputGroup);
-            //gridItem.appendChild(quantity);
-
-            let deleteButton = document.createElement("button");
-            deleteButton.className="btn btn-warning";
-            deleteButton.style="width: 40px;";
-            deleteButton.innerHTML = "<i class=\"fa-solid fa-delete-left\"></i>";
-            deleteButton.addEventListener("click", () => {
-                deleteCoffee(i);
-            });
-            inputGroup.appendChild(deleteButton);
-
-            cartItemsDiv.appendChild(gridItem);
+        let coffeeName = document.createElement("span");
+        coffeeName.className = 'input-group-text';
+        coffeeName.innerHTML = `${coffee.name} `;
+        
+        if (coffee.temp === 'h') {
+            coffeeName.innerHTML += "<i class=\"fa-solid fa-mug-hot fa-xl\"></i>";
+        } else {
+            coffeeName.innerHTML += "<i class=\"fa-regular fa-snowflake fa-xl\"></i>";
         }
-    }
+        inputGroup.appendChild(coffeeName);
+
+        let quantityInput = document.createElement("input");
+        quantityInput.className = `form-control innerInputNumber quantity_${coffee.name}_${coffee.temp}`;
+        quantityInput.type = "number";
+        quantityInput.value = coffee.quantity;
+        quantityInput.style.width = "50%";
+        inputGroup.appendChild(quantityInput);
+
+        // 수량 조절 버튼
+        let increaseButton = document.createElement("button");
+        increaseButton.className = "btn btn-dark";
+        increaseButton.style.width = "40px";
+        increaseButton.innerHTML = "+";
+        increaseButton.onclick = () => increaseQuantityClass(`quantity_${coffee.name}_${coffee.temp}`);
+        inputGroup.appendChild(increaseButton);
+
+        let decreaseButton = document.createElement("button");
+        decreaseButton.className = "btn btn-dark";
+        decreaseButton.style.width = "40px";
+        decreaseButton.innerHTML = "-";
+        decreaseButton.onclick = () => reducesQuantityClass(`quantity_${coffee.name}_${coffee.temp}`);
+        inputGroup.appendChild(decreaseButton);
+
+        // 삭제 버튼
+        let deleteButton = document.createElement("button");
+        deleteButton.className = "btn btn-warning";
+        deleteButton.style.width = "40px";
+        deleteButton.innerHTML = "<i class=\"fa-solid fa-delete-left\"></i>";
+        deleteButton.onclick = () => deleteCoffee(index);
+        inputGroup.appendChild(deleteButton);
+
+        gridItem.appendChild(inputGroup);
+        cartItemsDiv.appendChild(gridItem);
+    });
+}
     function getCookie(cname) {
         var name = cname + "=";
         var decodedCookie = decodeURIComponent(document.cookie);
